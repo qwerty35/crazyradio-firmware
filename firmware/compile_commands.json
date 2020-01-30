@@ -1,0 +1,86 @@
+[
+ {
+  "directory": "/home/jungwon/crazyswarm/crazyradio-firmware/firmware", 
+  "arguments": [
+   "sdcc", 
+   "-Iinc/", 
+   "--model-large", 
+   "--std-sdcc99", 
+   "-c", 
+   "src/led.c", 
+   "-o", 
+   "bin/led.rel"
+  ], 
+  "file": "src/led.c"
+ }, 
+ {
+  "directory": "/home/jungwon/crazyswarm/crazyradio-firmware/firmware", 
+  "arguments": [
+   "sdcc", 
+   "-Iinc/", 
+   "--model-large", 
+   "--std-sdcc99", 
+   "-c", 
+   "src/main.c", 
+   "-o", 
+   "bin/main.rel"
+  ], 
+  "file": "src/main.c"
+ }, 
+ {
+  "directory": "/home/jungwon/crazyswarm/crazyradio-firmware/firmware", 
+  "arguments": [
+   "sdcc", 
+   "-Iinc/", 
+   "--model-large", 
+   "--std-sdcc99", 
+   "-c", 
+   "src/utils.c", 
+   "-o", 
+   "bin/utils.rel"
+  ], 
+  "file": "src/utils.c"
+ }, 
+ {
+  "directory": "/home/jungwon/crazyswarm/crazyradio-firmware/firmware", 
+  "arguments": [
+   "sdcc", 
+   "-Iinc/", 
+   "--model-large", 
+   "--std-sdcc99", 
+   "-c", 
+   "src/radio.c", 
+   "-o", 
+   "bin/radio.rel"
+  ], 
+  "file": "src/radio.c"
+ }, 
+ {
+  "directory": "/home/jungwon/crazyswarm/crazyradio-firmware/firmware", 
+  "arguments": [
+   "sdcc", 
+   "-Iinc/", 
+   "--model-large", 
+   "--std-sdcc99", 
+   "-c", 
+   "src/usbDescriptor.c", 
+   "-o", 
+   "bin/usbDescriptor.rel"
+  ], 
+  "file": "src/usbDescriptor.c"
+ }, 
+ {
+  "directory": "/home/jungwon/crazyswarm/crazyradio-firmware/firmware", 
+  "arguments": [
+   "sdcc", 
+   "-Iinc/", 
+   "--model-large", 
+   "--std-sdcc99", 
+   "-c", 
+   "src/usb.c", 
+   "-o", 
+   "bin/usb.rel"
+  ], 
+  "file": "src/usb.c"
+ }
+]

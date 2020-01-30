@@ -1,6 +1,6 @@
 /**
- *    ||          ____  _ __
- * +------+      / __ )(_) /_______________ _____  ___
+ *    ||          ____  _ __                           
+ * +------+      / __ )(_) /_______________ _____  ___ 
  * | 0xBC |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  * +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
  *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
@@ -44,7 +44,7 @@ usbState_t usbGetState();
 
 //USB interruptions
 void usbWuIsr() __interrupt(11);
-void usbIsr() __interrupt(12);
+void usbIsr() __interrupt(12)  __using(1);
 
 //USB controll structure
 struct controllStruct {
@@ -57,7 +57,6 @@ struct controllStruct {
 
 //Vendor setup request handling
 bool usbIsVendorSetup(void);
-void usbHandleMsftFeatureIdDescriptor(void);
 __xdata struct controllStruct * usbGetSetupPacket(void);
 void usbAckSetup(void);
 void usbDismissSetup(void);
@@ -107,30 +106,11 @@ typedef struct {
 #define SET_RADIO_POWER   0x04
 #define SET_RADIO_ARD     0x05
 #define SET_RADIO_ARC     0x06
+#define SET_RADIO_ADDR2   0x07 //jungwon
 #define ACK_ENABLE        0x10
 #define SET_CONT_CARRIER  0x20
 #define CHANNEL_SCANN     0x21
 #define SET_MODE          0x22
-
-/*
-  GENERIC CONTROL FUNCTIONS
-  New functions to allow low-level access to control registers
-  that are not needed for CrazyFlie use but might be for other custom apps
-*/
-#define SHOCKBURST        0x30
-#define CRC               0x31
-#define CRC_LEN           0x32
-#define ADDR_LEN          0x33
-#define EN_RX_PIPES       0x34
-#define DISABLE_RETRY     0x35
-#define DYNPD             0x36
-#define EN_DPL            0x37
-#define EN_ACK_PAY        0x38
-#define EN_DYN_ACK        0x40
-// end new commands
-
-
-#define MSFT_ID_FEATURE_DESCRIPTOR 0xFE
 #define LAUNCH_BOOTLOADER 0xFF
 
 //CMD mode commands
@@ -149,13 +129,13 @@ typedef struct {
 #define RADIO_POWER_0dBm   3
 
 //SET_MODE parameter
-#define MODE_LEGACY         0
-#define MODE_CMD            1
-#define MODE_PRX            2
-#define MODE_MOD_CARRIER    3
+#define MODE_LEGACY 0
+#define MODE_CMD    1
+#define MODE_PRX    2
 
 // Error values
 #define ERROR_UNKNOWN_CMD   0
 #define ERROR_MALFORMED_CMD 1
 
 #endif /* __USB_H__ */
+

@@ -40,21 +40,17 @@
 #include "ppm.h"
 #endif
 
-
 //Compilation seems bugged on SDCC 3.1, imposing 3.2
 //Comment-out the three following lines only if you know what you are doing!
 //#if SDCC != 320
 //#error Compiling with SDCC other than 3.2 is not supported due to a bug when launching the bootloader
 //#endif
 
-void checkBootPin();
 void launchBootloader();
 void handleUsbVendorSetup();
 void legacyRun();
 void prxRun();
 void cmdRun();
-void modCarrierRun();
-uint8_t  pn9_get_byte ();
 
 //Transmit buffer
 __xdata char tbuffer[64];
@@ -73,11 +69,7 @@ static volatile unsigned char mode = MODE_LEGACY;
 
 void main()
 {
-  CKCON = 2;
-
   mode = MODE_LEGACY;
-
-  checkBootPin();
 
   //Init the chip ID
   initId();
@@ -135,11 +127,6 @@ void main()
       // Run PRX mode
       prxRun();
     }
-    else if (mode == MODE_MOD_CARRIER)
-    {
-      // Run modulated carrier mode
-      modCarrierRun();
-    }
 
     //USB vendor setup handling
     if(usbIsVendorSetup())
@@ -181,18 +168,37 @@ void handleUsbVendorSetup()
     }
     else if(setup->request == SET_RADIO_ADDRESS)
     {
-      if((setup->length>5)||(setup->length<3))
+      if(setup->length != 5)
       {
         usbDismissSetup();
         return;
       }
-      
+
       //Arm and wait for the out transaction
       OUT0BC = BCDUMMY;
       while (EP0CS & OUTBSY);
 
       //Set address of the pipe given by setup's index
       radioSetAddress(OUT0BUF);
+
+      //Ack the setup phase
+      usbAckSetup();
+      return;
+    }
+    else if(setup->request == SET_RADIO_ADDR2) //jungwon
+    {
+      if(setup->length != 5)
+      {
+        usbDismissSetup();
+        return;
+      }
+
+      //Arm and wait for the out transaction
+      OUT0BC = BCDUMMY;
+      while (EP0CS & OUTBSY);
+
+      //Set address of the pipe given by setup's index
+      radioSetAddr2(OUT0BUF);
 
       //Ack the setup phase
       usbAckSetup();
@@ -237,95 +243,6 @@ void handleUsbVendorSetup()
         usbAckSetup();
         return;
     }
-
-    /*
-       GENERIC CONTROL FUNCTIONS
-       New functions to allow low-level access to control registers
-       that are not needed for CrazyFlie use but might be for other custom apps
-    */
-    else if(setup->request == SHOCKBURST)
-    {
-      char val=setup->value;
-      if(val>6) val=6;
-      if(val<0) val=0;
-         
-      radioShockburstPipes(val);
-      usbAckSetup();
-      return;
-    }
-    else if(setup->request == CRC)
-    {
-      if(setup->value == 1) {
-        radioSetCRC(true);
-      } else {
-        radioSetCRC(false);
-      }
-      usbAckSetup();
-      return;
-    }
-    else if(setup->request == CRC_LEN)
-    {
-      if(setup->value == 1) {
-        radioSetCRCLen(0);
-      } else {
-        radioSetCRCLen(1);
-      }
-      usbAckSetup();
-      return;
-    }
-    else if(setup->request == ADDR_LEN)
-    {
-      radioSetAddrLen(setup->value);
-      usbAckSetup();
-      return;
-    }
-    else if(setup->request == EN_RX_PIPES)
-    {
-      radioEnableRxPipe(setup->value);
-      usbAckSetup();
-      return;
-    }
-    else if(setup->request == DISABLE_RETRY)
-    {
-      radioDisableRetry();
-      usbAckSetup();
-      return;
-    }
-    else if(setup->request == DYNPD)
-    {
-      char val=setup->value;
-      // FIXME hack - do all 6 pipes the same
-      int x;
-      for(x=0;x<7;x++)
-      {
-        // disable dynamic payload AND set the new payload len
-        radioRxDynPayload(x, false);
-        radioRxPayloadLen(x, val);
-      }
-      usbAckSetup();
-      return;
-    }
-    else if(setup->request == EN_DPL)
-    {
-      radioTxDynPayload(true);
-      return;
-    }
-    else if(setup->request == EN_ACK_PAY)
-    {
-      if(setup->value==1) radioPayloadAck(true);
-      else  radioPayloadAck(false);
-      return;
-    }
-    else if(setup->request == EN_DYN_ACK)
-    {
-      if(setup->value==1) radioPayloadAck(true);
-      else  radioPayloadAck(false);
-      return;
-    }
-    /*
-       END GENERIC CONTROL FUNCTIONS
-    */
-
     else if(setup->request == CHANNEL_SCANN && setup->requestType == 0x40)
     {
       int i;
@@ -399,37 +316,10 @@ void handleUsbVendorSetup()
       usbAckSetup();
       return;
     }
-    else if (setup->index == 0x0004 && setup->request == MSFT_ID_FEATURE_DESCRIPTOR)
-    {
-      usbHandleMsftFeatureIdDescriptor();
-      return;
-    }
   }
 
   //Stall in error if nothing executed!
   usbDismissSetup();
-}
-
-void checkBootPin()
-{
-  int i;
-  void (*bootloader)() = (void (*)())0x7800;
-
-  // Detect hard short to GCC
-  for (i=0; i<200; i++) {
-    if ((P0 & (1<<5)) == 0) {
-      return;
-    }
-  }
-
-  //Deactivate the interruptions
-  IEN0 = 0x00;
-
-  //Reset memory wait-state to default
-  CKCON = 1;
-
-  //Call the bootloader
-  bootloader();
 }
 
 // De-init all the peripherical,
@@ -443,9 +333,6 @@ void launchBootloader()
 
   //Deinitialise the USB
   usbDeinit();
-
-  //Reset memory wait-state to default
-  CKCON = 1;
 
   //Deinitialise the radio
   radioDeinit();
@@ -529,27 +416,6 @@ void legacyRun()
       ledSet(LED_GREEN, true);
     }
   }
-}
-
-/* Modulated carrier mode. Constantly trasnmits random 32 byte packet
- */
-void modCarrierRun()
-{
-  __xdata unsigned char lfsrAddress[5];
-   uint8_t i;
-  
-  for (i = 0; i < 5; i++)
-  {
-    lfsrAddress[i] = pn9_get_byte();
-  }
-  radioSetAddress(lfsrAddress);
-
-  for (i = 0; i < 32; i++)
-  {
-    tbuffer[i] = pn9_get_byte();
-  }
-
-  radioSendPacketNoAck(tbuffer, 32);
 }
 
 /* Command mode, the bulk usb packets contains both data and configuration in a
@@ -718,33 +584,4 @@ void prxRun()
     //reactivate OUT1
     OUT1BC=BCDUMMY;
   }
-}
-
-/* Use PN9 to generate a pseudo-random number sequence. 
- * The LFSR uses x^9 + x^5 as the primitive polynom.
- */
-#define 	pn9_bit5   0x08
-#define 	pn9_bit9   0x80
-uint8_t  pn9_get_byte (void)
-{
-    static uint8_t bits_9_to_2 = 0xFF;
-    static uint8_t bit_1 = 1;
-    static uint8_t feedback;
-    uint8_t i, out;
-
-    out = bits_9_to_2;
-    
-    for (i = 0; i < 8; i++)
-    {
-        // Tap the register
-        feedback =  
-            ((((bits_9_to_2 & pn9_bit9)>>4) ^ (bits_9_to_2 & pn9_bit5)) == 0) ? 0 : 1;
-        // Shift
-        bits_9_to_2<<=1;
-        bits_9_to_2 |= (uint8_t) bit_1;
-        // Enter feedback
-        bit_1 = feedback;
-    } 
-
-    return out;
 }

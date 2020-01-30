@@ -1,21 +1,17 @@
 
-# Build configuration
-CRPA ?= 1
-
 #Compiler
 SDCC ?= sdcc
-SDAS8051 ?= sdas8051
 
 NRFPROG ?= ../nrfProg/nrfProg
 
 VERIFIED ?= 0
 
-CFLAGS = -Iinc/ --model-small --std-sdcc99
-LDFLAGS = --xram-loc 0x8000 --xram-size 2048 --model-small
+CFLAGS = -Iinc/ --model-large --std-sdcc99
+LDFLAGS = --xram-loc 0x8000 --xram-size 2048 --model-large
 
 VPATH += src/ bin/
 
-OBJS = main.rel radio.rel usb.rel usbDescriptor.rel led.rel utils.rel crtxinit.rel
+OBJS = main.rel radio.rel usb.rel usbDescriptor.rel led.rel utils.rel
 
 ifdef PPM_JOYSTICK
 ifneq ($(PPM_JOYSTICK), 0)
@@ -24,14 +20,14 @@ ifneq ($(PPM_JOYSTICK), 0)
 endif
 endif
 
-ifeq ($(strip $(CRPA)),1)
+ifdef CRPA
   CFLAGS += -DCRPA
 endif
 
 .PHONY: all cri
 
 all: cradio.bin
-ifeq ($(strip $(CRPA)),1)
+ifdef CRPA
 	@echo Crazyradio PA build
 else
 	@echo Original Crazyradio build
@@ -50,10 +46,6 @@ bin/cradio.cri: bin/cradio.bin
 
 clean:
 	rm -f bin/*
-	rm -f TAGS
-
-tags:
-	etags ./src/*.c ./inc/*.h
 
 mrproper: clean
 	rm -f src/*~ inc/*~ *~
@@ -71,9 +63,6 @@ reset:
 # General targets
 %.rel: %.c
 	$(SDCC) $(CFLAGS) -c $< -o bin/$@
-
-%.rel: %.asm
-	$(SDAS8051) -plosgff -o bin/$@ $<
 
 bin/:
 	mkdir -p bin

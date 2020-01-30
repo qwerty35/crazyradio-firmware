@@ -27,9 +27,6 @@
 #ifndef __NRF24LU1P_H__
 #define __NRF24LU1P_H__
 
-//system registers
-__sfr __at (0x8E) CKCON;
-
 //Radio SPI regs
 __sfr __at (0xE5) RFDAT;
 __sfr __at (0xE6) RFCTL;
@@ -247,21 +244,21 @@ __sfr __at (0xD9) USBSLP;
 #define INISOVAL (*((__xdata unsigned char *)0xC7E0))
 #define OUTISOVAL (*((__xdata unsigned char *)0xC700))
 
-__xdata unsigned char __at (0xC7E8) SETUPBUF[8];
+unsigned char __at (0xC7E8) SETUPBUF[8];
 
 //EP data buffers
-__xdata unsigned char __at (0xC6C0) OUT0BUF[64];
-__xdata unsigned char __at (0xC700) IN0BUF[64];
-__xdata unsigned char __at (0xC640) OUT1BUF[64];
-__xdata unsigned char __at (0xC680) IN1BUF[64];
-__xdata unsigned char __at (0xC5C0) OUT2BUF[64];
-__xdata unsigned char __at (0xC600) IN2BUF[64];
-__xdata unsigned char __at (0xC540) OUT3BUF[64];
-__xdata unsigned char __at (0xC580) IN3BUF[64];
-__xdata unsigned char __at (0xC4C0) OUT4BUF[64];
-__xdata unsigned char __at (0xC500) IN4BUF[64];
-__xdata unsigned char __at (0xC440) OUT5BUF[64];
-__xdata unsigned char __at (0xC480) IN5BUF[64];
+unsigned char __at (0xC6C0) OUT0BUF[64];
+unsigned char __at (0xC700) IN0BUF[64];
+unsigned char __at (0xC640) OUT1BUF[64];
+unsigned char __at (0xC680) IN1BUF[64];
+unsigned char __at (0xC5C0) OUT2BUF[64];
+unsigned char __at (0xC600) IN2BUF[64];
+unsigned char __at (0xC540) OUT3BUF[64];
+unsigned char __at (0xC580) IN3BUF[64];
+unsigned char __at (0xC4C0) OUT4BUF[64];
+unsigned char __at (0xC500) IN4BUF[64];
+unsigned char __at (0xC440) OUT5BUF[64];
+unsigned char __at (0xC480) IN5BUF[64];
 
 
 /******* USB Registers content ********/
@@ -380,3 +377,4 @@ __xdata unsigned char __at (0xC480) IN5BUF[64];
 
 
 #endif /* __NRF24LU1P_H__ */
+

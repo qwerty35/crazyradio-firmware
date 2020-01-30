@@ -1,6 +1,6 @@
 /**
- *    ||          ____  _ __
- * +------+      / __ )(_) /_______________ _____  ___
+ *    ||          ____  _ __                           
+ * +------+      / __ )(_) /_______________ _____  ___ 
  * | 0xBC |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  * +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
  *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
@@ -35,20 +35,17 @@ enum radioMode_e
   RADIO_MODE_PRX,
 };
 
-#define ARD_RAW 0
-#define ARD_PLOAD 0x80
-
-
 //High level functions
 void radioInit(enum radioMode_e mode);
 void radioDeinit();
 unsigned char radioSendPacket(__xdata char *payload, char len,
                               __xdata char *ackPayload, char *ackLen);
 void radioSendPacketNoAck(__xdata char *payload, char len);
-void radioSetChannel(signed char channel);
+void radioSetChannel(char channel);
 void radioSetDataRate(unsigned char dr);
 char radioGetDataRate();
 void radioSetAddress(__xdata char* address);
+void radioSetAddr2(__xdata char* address); //jungwon
 void radioSetPower(char power);
 void radioSetArd(char ard);
 void radioSetArc(char arc);
@@ -59,10 +56,6 @@ uint8_t radioGetTxRetry(void);
 void radioSetMode(enum radioMode_e mode);
 
 bool radioIsRxEmpty();
-void radioSetShockburst(char enable);
-void radioSetCRC(char enable);
-void radioSetCRCLen(char len);
-
 
 //Each function returns the status register
 char radioNop();
@@ -74,17 +67,9 @@ void radioTxPacketNoAck(__xdata char *payload, char len);
 void radioAckPacket(char pipe, __xdata char* payload, char len);
 char radioRxPacket(__xdata char *payload);
 
-void radioShockburstPipes(char pipes);
-void radioSetCRC(char enable);
-void radioSetCRCLen(char len);
-void radioSetAddrLen(char len);
-void radioEnableRxPipe(char pipes);
-void radioDisableRetry(void);
-void radioRxPayloadLen(char pipe, char len);
-void radioRxDynPayload(char pipe, bool enable);
-void radioTxDynPayload(bool enable);
-void radioPayloadAck(bool enable);
-void radioTxPayloadNoAck(bool enable);
-
+#define ARD_RAW 0
+#define ARD_PLOAD 0x80
 
 #endif /* __RADIO_H__ */
+
+
